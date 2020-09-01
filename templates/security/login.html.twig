@@ -1,6 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Log in!{% endblock %}
+{% block stylesheets %}
+    {{ encore_entry_link_tags('login') }}
+{% endblock %}
+{% block javascripts %}
+    {{ encore_entry_script_tags('login') }}
+{% endblock %}
 
 {% block body %}
 <form method="post">

@@ -57,6 +57,8 @@ Encore
     // enables Sass/SCSS support
     .enableSassLoader()
 
+    .enableVueLoader(() => {}, { runtimeCompilerBuild: false })
+
     // uncomment if you use TypeScript
     //.enableTypeScriptLoader()
 

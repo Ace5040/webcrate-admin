@@ -5,6 +5,9 @@
         "node-sass": "^4.14.1",
         "regenerator-runtime": "^0.13.2",
         "sass-loader": "^10.0.1",
+        "vue": "^2.6.12",
+        "vue-loader": "^15.9.3",
+        "vue-template-compiler": "^2.6.12",
         "webpack-notifier": "^1.6.0"
     },
     "license": "UNLICENSED",
@@ -15,5 +18,8 @@
         "watch": "encore dev --watch",
         "build": "encore production --progress"
     },
-    "dependencies": {}
+    "dependencies": {
+        "bootstrap": "^4.5.2",
+        "bootstrap-vue": "^2.16.0"
+    }
 }

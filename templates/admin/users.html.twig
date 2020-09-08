@@ -2,16 +2,16 @@
 
 {% block title %}Webcrate Admin Panel{% endblock %}
 {% block stylesheets %}
-    {{ encore_entry_link_tags('admin') }}
+    {{ encore_entry_link_tags('admin-users') }}
 {% endblock %}
 {% block javascripts %}
-    {{ encore_entry_script_tags('admin') }}
+    {{ encore_entry_script_tags('admin-users') }}
 {% endblock %}
 
 {% block body %}
     <script>
         var user = '{{ app.user.email }}';
-        var soft = {{ soft|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+        var users = {{ users|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
     </script>
     <div id="app"></div>
 {% endblock %}

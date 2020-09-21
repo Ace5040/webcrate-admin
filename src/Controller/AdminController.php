@@ -10,14 +10,35 @@ use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class AdminController extends AbstractController
 {
+
+    private $cache;
+
+    public function __construct(CacheInterface $cache)
+    {
+        $this->cache = $cache;
+    }
 
     /**
      * @Route("/", name="admin")
      */
     public function index()
+    {
+        $soft = $this->cache->get('versions', function (ItemInterface $item) {
+            $item->expiresAfter(604800);
+            return $this->getVersions();
+        });
+        return $this->render('admin/index.html.twig', [
+            'controller_name' => 'AdminController',
+            'soft' => $soft
+        ]);
+    }
+
+    private function getVersions()
     {
         $process = Process::fromShellCommandline('sudo /webcrate/versions.py');
         $process->run();
@@ -27,10 +48,7 @@ class AdminController extends AbstractController
         $soft_json = $process->getOutput();
         $encoder = new JsonEncoder();
         $soft = $encoder->decode($soft_json, 'json');
-        return $this->render('admin/index.html.twig', [
-            'controller_name' => 'AdminController',
-            'soft' => $soft
-        ]);
+        return $soft;
     }
 
     /**

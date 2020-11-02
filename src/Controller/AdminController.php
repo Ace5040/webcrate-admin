@@ -63,12 +63,23 @@ class AdminController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/admin/users/{uid}", name="admin-user")
+     */
+    public function user($uid)
+    {
+        $user = self::get_user($uid);
+        return $this->render('admin/user.html.twig', [
+            'controller_name' => 'AdminController',
+            'user' => $user
+        ]);
+    }
+
     private function get_users_list()
     {
         $list = [];
         if ( file_exists('/webcrate/users.yml') ) {
             try {
-
                 $users = Yaml::parseFile('/webcrate/users.yml');
                 foreach ($users as $username => $user) {
                     $user = (object)$user;
@@ -79,6 +90,17 @@ class AdminController extends AbstractController
             }
        }
        return $list;
+    }
+
+    private function get_user($uid)
+    {
+       $users = self::get_users_list();
+       foreach ( $users as $user ) {
+           if ( $user->uid == $uid ) {
+               return $user;
+           }
+       }
+       return null;
     }
 
 }

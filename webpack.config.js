@@ -25,6 +25,7 @@ Encore
      */
     .addEntry('admin', './assets/js/admin.js')
     .addEntry('admin-users', './assets/js/admin-users.js')
+    .addEntry('admin-user', './assets/js/admin-user.js')
     .addEntry('login', './assets/js/login.js')
     //.addEntry('page1', './assets/js/page1.js')
     //.addEntry('page2', './assets/js/page2.js')

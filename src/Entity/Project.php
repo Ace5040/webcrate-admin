@@ -248,7 +248,7 @@ class Project
     public function toObject(): object
     {
         $object = (object)[
-            'uid' => $this->uid,
+            'uid' => (int)$this->uid,
             'password' => $this->password,
             'domains' => $this->domains,
             'nginx_config' => $this->nginxConfig == 'custom' ? 'custom' : 'default',
@@ -256,11 +256,11 @@ class Project
             'https' => $this->https->getName(),
             'backend' => $this->backend->getName(),
             'backend_version' => $this->backend->getVersion(),
-            'gunicorn_app_module' => $this->gunicornAppModule,
-            'mysql_db' => $this->mysql ? 'yes' : 'no',
-            'mysql5_db' => $this->mysql5 ? 'yes' : 'no',
-            'postgresql_db' => $this->postgre ? 'yes' : 'no',
-            'backup' => $this->backup ? 'yes' : 'no'
+            'gunicorn_app_module' => !empty($this->gunicornAppModule) ? $this->gunicornAppModule : '',
+            'mysql_db' => (bool)$this->mysql,
+            'mysql5_db' => (bool)$this->mysql5,
+            'postgresql_db' => (bool)$this->postgre,
+            'backup' => (bool)$this->backup
         ];
         return $object;
     }

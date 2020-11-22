@@ -21,7 +21,6 @@ use App\Entity\Project;
 use App\Entity\HttpsType;
 use App\Entity\Backend;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class AdminController extends AbstractController
@@ -144,10 +143,10 @@ class AdminController extends AbstractController
                 $project = new Project();
                 $project->setUid($user->uid);
                 $project->setName($username);
-                $project->setBackup($user->backup == 'yes');
-                $project->setMysql($user->mysql_db == 'yes');
-                $project->setMysql5($user->mysql5_db == 'yes');
-                $project->setPostgre($user->postgresql_db == 'yes');
+                $project->setBackup($user->backup == 'yes' || $user->backup === true );
+                $project->setMysql($user->mysql_db == 'yes' || $user->mysql_db === true );
+                $project->setMysql5($user->mysql5_db == 'yes' || $user->mysql5_db === true );
+                $project->setPostgre($user->postgresql_db == 'yes' || $user->postgresql_db === true );
                 $project->setRootFolder($user->root_folder);
                 $project->setPassword($user->password);
                 $project->setNginxConfig($user->nginx_config == 'custom');
@@ -165,13 +164,13 @@ class AdminController extends AbstractController
         }
         $this->manager->flush();
 
-        //$debug = $this->updateUsersYaml();
+        $debug = $this->updateUsersYaml();
 
         $response = new JsonResponse();
         $response->setData([
             'name' => $filename,
             'data' => $users,
-            //'debug' => $debug
+            'debug' => $debug
         ]);
 
         return $response;
@@ -180,12 +179,12 @@ class AdminController extends AbstractController
     public function updateUsersYaml()
     {
         $projects = $this->repository->getList();
-        $users = [];
+        $users = (object)[];
         foreach ( $projects as $project ) {
-            $users[] = $project->toObject();
+            $projectname = $project->getName();
+            $users->$projectname = $project->toObject();
         }
-        $fsObject = new Filesystem();
-        $ymlData = Yaml::dump(['data' => $users], 2, 4, Yaml::DUMP_OBJECT_AS_MAP);
+        $ymlData = Yaml::dump($users, 3, 2, Yaml::DUMP_OBJECT_AS_MAP);
         $WEBCRATE_UID = (int)$_ENV['DATABASE_URL'];
         $WEBCRATE_GID = (int)$_ENV['WEBCRATE_GID'];
 
@@ -195,17 +194,8 @@ class AdminController extends AbstractController
         ];
 
         try {
-            $new_file_path = "/app/users2.yml";
-            if ( !$fsObject->exists($new_file_path) )
-            {
-                $fsObject->touch($new_file_path);
-                $fsObject->chown($new_dir_path, $WEBCRATE_UID);
-                $fsObject->chgrp($new_dir_path, $WEBCRATE_GID);
-                //$fsObject->chmod($new_file_path, 0777);
-                //$fsObject->chmod($new_file_path, 0777);
-                //$fsObject->appendToFile($new_file_path, "This should be added to the end of the file.\n");
-            }
-            $fsObject->dumpFile($new_file_path, $ymlData);
+            $new_file_path = "/webcrate/users.yml";
+            file_put_contents($new_file_path, $ymlData);
         } catch (IOExceptionInterface $exception) {
             $debug['error'] = $exception->getMessage();
         }

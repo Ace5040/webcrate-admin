@@ -18,6 +18,20 @@
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
+  <div class="action-menu">
+    <div class="">Import projects from users.yml file: </div>
+    <b-form @submit="onImport">
+      <b-form-group>
+        <b-form-file
+          v-model="projectsFile"
+          :state="Boolean(projectsFile)"
+          placeholder="Choose a file or drop it here..."
+          drop-placeholder="Drop file here..."
+        ></b-form-file>
+      </b-form-group>
+      <b-button type="submit" variant="primary">Import</b-button>
+    </b-form>
+  </div>
   <b-table v-if="users.length" sort-by="uid" striped hover :items="users" :fields="fields">
       <template v-slot:cell(name)="row">
         {{ row.value }}
@@ -44,6 +58,7 @@ export default {
     return {
         user: user,
         users: users,
+        projectsFile: null,
         fields: [
           {key: 'uid', label: 'uid', sortable: true },
           {key: 'name', label: 'Name', sortable: true },
@@ -70,6 +85,26 @@ export default {
 
   methods: {
 
+    onImport: function(e) {
+      e.preventDefault();
+      let formData = new FormData();
+      formData.append('file', this.projectsFile);
+
+      this.axios.post('/admin/import-projects',
+          formData,
+          {
+          headers: {
+              'Content-Type': 'multipart/form-data'
+          }
+        }
+      ).then(function(data){
+        console.log(data.data);
+      })
+      .catch(function(){
+        console.log('FAILURE!!');
+      });
+
+    }
 
   }
 

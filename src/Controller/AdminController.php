@@ -8,19 +8,37 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\HttpClient\CurlHttpClient;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\CacheInterface;
+use App\Repository\ProjectRepository;
+use App\Repository\HttpsTypeRepository;
+use App\Repository\BackendRepository;
+use App\Entity\Project;
+use App\Entity\HttpsType;
+use App\Entity\Backend;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class AdminController extends AbstractController
 {
 
     private $cache;
+    private $repository;
+    private $https_repository;
+    private $backend_repository;
 
-    public function __construct(CacheInterface $cache)
+    public function __construct(CacheInterface $cache, ProjectRepository $repository, HttpsTypeRepository $https_repository, BackendRepository $backend_repository, EntityManagerInterface $manager)
     {
         $this->cache = $cache;
+        $this->repository = $repository;
+        $this->https_repository = $https_repository;
+        $this->backend_repository = $backend_repository;
+        $this->manager = $manager;
     }
 
     /**
@@ -80,10 +98,15 @@ class AdminController extends AbstractController
         $list = [];
         if ( file_exists('/webcrate/users.yml') ) {
             try {
-                $users = Yaml::parseFile('/webcrate/users.yml');
-                foreach ($users as $username => $user) {
-                    $user = (object)$user;
-                    $user->name = $username;
+                $users = $this->repository->getList();
+                foreach ($users as $entity) {
+                    $user = (object)[];
+                    $user->name = $entity->getName();
+                    $user->uid = $entity->getUid();
+                    $user->backend = $entity->getBackend()->getName();
+                    $user->backend_version = $entity->getBackend()->getVersion();
+                    $user->backup = $entity->getBackup() ? 'yes' : 'no';
+                    $user->https = $entity->getHttps()->getName();
                     $list[] = $user;
                 }
             } catch (ParseException $exception) {
@@ -94,13 +117,99 @@ class AdminController extends AbstractController
 
     private function get_user($uid)
     {
-       $users = self::get_users_list();
-       foreach ( $users as $user ) {
-           if ( $user->uid == $uid ) {
-               return $user;
-           }
-       }
-       return null;
+       $entity = $this->repository->loadByUid($uid);
+       $user = (object)[];
+       $user->name = $entity->getName();
+       $user->uid = $entity->getUid();
+       $user->backend = $entity->getBackend()->getName();
+       $user->backend_version = $entity->getBackend()->getVersion();
+       $user->backup = $entity->getBackup() ? 'yes' : 'no';
+       $user->https = $entity->getHttps()->getName();
+       return $user;
+    }
+
+    /**
+     * @Route("/admin/import-projects", name="import-projects")
+     */
+    public function importProjects(Request $request): Response
+    {
+        $file = $request->files->get('file');
+        $filename = $file->getClientOriginalName();
+        $filepath = $file->getPathname();
+        $users = Yaml::parseFile($filepath);
+        foreach ( $users as $username => $user ) {
+            $user = (object)$user;
+            $entity = $this->repository->loadByUid($user->uid);
+            if ( empty($entity) ) {
+                $project = new Project();
+                $project->setUid($user->uid);
+                $project->setName($username);
+                $project->setBackup($user->backup == 'yes');
+                $project->setMysql($user->mysql_db == 'yes');
+                $project->setMysql5($user->mysql5_db == 'yes');
+                $project->setPostgre($user->postgresql_db == 'yes');
+                $project->setRootFolder($user->root_folder);
+                $project->setPassword($user->password);
+                $project->setNginxConfig($user->nginx_config == 'custom');
+                $https = $this->https_repository->findByName($user->https);
+                $project->setHttps($https);
+                $backend_version = empty($user->backend_version) || $user->backend_version == "7" ? 'latest' : $user->backend_version;
+                $backend = $this->backend_repository->findByNameAndVersion($user->backend, (string)$backend_version);
+                $project->setBackend($backend);
+                if ( !empty($user->gunicorn_app_module) && ( $user->backend == 'php' ) ) {
+                    $project->getGunicornAppModule($user->gunicorn_app_module);
+                }
+                $project->setDomains($user->domains);
+                $this->manager->persist($project);
+            }
+        }
+        $this->manager->flush();
+
+        //$debug = $this->updateUsersYaml();
+
+        $response = new JsonResponse();
+        $response->setData([
+            'name' => $filename,
+            'data' => $users,
+            //'debug' => $debug
+        ]);
+
+        return $response;
+    }
+
+    public function updateUsersYaml()
+    {
+        $projects = $this->repository->getList();
+        $users = [];
+        foreach ( $projects as $project ) {
+            $users[] = $project->toObject();
+        }
+        $fsObject = new Filesystem();
+        $ymlData = Yaml::dump(['data' => $users], 2, 4, Yaml::DUMP_OBJECT_AS_MAP);
+        $WEBCRATE_UID = (int)$_ENV['DATABASE_URL'];
+        $WEBCRATE_GID = (int)$_ENV['WEBCRATE_GID'];
+
+        $debug = [
+            'WEBCRATE_UID' => $WEBCRATE_UID,
+            'WEBCRATE_GID' => $WEBCRATE_GID
+        ];
+
+        try {
+            $new_file_path = "/app/users2.yml";
+            if ( !$fsObject->exists($new_file_path) )
+            {
+                $fsObject->touch($new_file_path);
+                $fsObject->chown($new_dir_path, $WEBCRATE_UID);
+                $fsObject->chgrp($new_dir_path, $WEBCRATE_GID);
+                //$fsObject->chmod($new_file_path, 0777);
+                //$fsObject->chmod($new_file_path, 0777);
+                //$fsObject->appendToFile($new_file_path, "This should be added to the end of the file.\n");
+            }
+            $fsObject->dumpFile($new_file_path, $ymlData);
+        } catch (IOExceptionInterface $exception) {
+            $debug['error'] = $exception->getMessage();
+        }
+        return $debug;
     }
 
 }

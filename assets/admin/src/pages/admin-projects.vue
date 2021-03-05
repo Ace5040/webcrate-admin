@@ -31,13 +31,14 @@
         <b-button type="submit" variant="primary">Import</b-button>
       </b-form-group>
     </b-form>
+    <b-button href="/admin/project/add" variant="primary">Create new project</b-button>
   </div>
   <b-table v-if="projects.length" sort-by="uid" striped hover :items="projects" :fields="fields">
       <template v-slot:cell(name)="row">
         {{ row.value }}
       </template>
       <template v-slot:cell(actions)="row">
-        <b-button variant="primary" size="sm" :href="'/admin/projects/'+row.item.uid">Edit</b-button>
+        <b-button variant="primary" size="sm" :href="'/admin/project/'+row.item.uid">Edit</b-button>
       </template>
   </b-table>
 </div>

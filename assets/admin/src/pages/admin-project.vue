@@ -36,8 +36,6 @@ export default {
   data () {
     return {
       user: user,
-      //project: project,
-      //form: form
     }
   },
 

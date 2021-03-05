@@ -25,7 +25,7 @@ class ProjectRepository extends ServiceEntityRepository
     public function getList()
     {
         return $this->createQueryBuilder('p')
-            ->orderBy('p.id', 'ASC')
+            ->orderBy('p.uid', 'ASC')
             ->setMaxResults(1000)
             ->getQuery()
             ->getResult()
@@ -40,6 +40,34 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
+
+    public function getFirstAvailableUid(): ?int
+    {
+
+
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT uid FROM project p
+            ORDER BY p.uid ASC
+            ';
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $freeUid = 100000;
+        $results = $stmt->fetchAll();
+        $uids = [];
+        foreach ( $results as $index => $row ) {
+            $uid = intval($row['uid']);
+            if ($index + 100000 !== $uid) {
+                $freeUid = $index + 100000;
+                break;
+            }
+            $freeUid = $index + 100001;
+        }
+
+        return $freeUid;
+
     }
 
 }

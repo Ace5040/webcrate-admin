@@ -52,21 +52,6 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/admin/project/add", name="project-add")
-     */
-    public function newProject(Request $request)
-    {
-        $form = $this->createFormBuilder()
-            ->add('name', TextType::class, [
-                'constraints' => new NotBlank(),
-            ])
-            ->getForm();
-        return $this->render('admin/project-new.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    }
-
-    /**
      * @Route("/", name="admin")
      */
     public function index()
@@ -122,27 +107,58 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/admin/projects/{uid}", name="admin-project")
+     * @Route("/admin/project/add", name="project-add")
+     */
+    public function newProject(Request $request)
+    {
+        $project = new Project();
+        $form = $this->createForm(ProjectType::class, $project);
+        if ($request->isMethod('POST'))
+        {
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid())
+            {
+                $project = $form->getData();
+                $project->setUid($this->repository->getFirstAvailableUid());
+                $this->manager->persist($project);
+                $this->manager->flush();
+                $this->updateUsersYaml();
+                return $this->redirectToRoute('admin-projects');
+            }
+        }
+        return $this->render(
+            'admin/project.html.twig',
+            [
+                'form' => $form->createView(),
+            ]
+        );
+    }
+
+    /**
+     * @Route("/admin/project/{uid}", name="admin-project")
      */
     public function project($uid, Request $request)
     {
-
         $project = $this->repository->loadByUid($uid);
         $form = $this->createForm(ProjectType::class, $project);
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod('POST'))
+        {
             $form->handleRequest($request);
-            if ($form->isSubmitted() && $form->isValid()) {
+            if ($form->isSubmitted() && $form->isValid())
+            {
                 $project = $form->getData();
                 $this->manager->persist($project);
                 $this->manager->flush();
                 $this->updateUsersYaml();
-                //return $this->redirectToRoute('admin-projects');
+                return $this->redirectToRoute('admin-projects');
             }
         }
-        return $this->render('admin/project.html.twig', [
-            'form' => $form->createView(),
-        ]);
-
+        return $this->render(
+            'admin/project.html.twig',
+            [
+                'form' => $form->createView(),
+            ]
+        );
     }
 
     /**

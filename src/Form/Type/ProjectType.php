@@ -29,6 +29,9 @@ class ProjectType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+        ->add('uid', TextType::class, [
+            'disabled' => true,
+        ])
         ->add('name', TextType::class, [
             'constraints' => new NotBlank(),
         ])

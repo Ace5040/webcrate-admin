@@ -39,6 +39,7 @@
       </template>
       <template v-slot:cell(actions)="row">
         <b-button variant="primary" size="sm" :href="'/admin/project/'+row.item.uid">Edit</b-button>
+        <b-button variant="danger" size="sm" :href="'/admin/project/'+row.item.uid+'/delete'">Delete</b-button>
       </template>
   </b-table>
 </div>

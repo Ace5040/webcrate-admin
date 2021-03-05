@@ -162,6 +162,18 @@ class AdminController extends AbstractController
     }
 
     /**
+     * @Route("/admin/project/{uid}/delete", name="admin-project-delete")
+     */
+    public function projectDelete($uid)
+    {
+        $project = $this->repository->loadByUid($uid);
+        $this->manager->remove($project);
+        $this->manager->flush();
+        $this->updateUsersYaml();
+        return $this->redirectToRoute('admin-projects');
+    }
+
+    /**
      * @Route("/admin/import-projects", name="import-projects")
      */
     public function importProjects(Request $request): Response

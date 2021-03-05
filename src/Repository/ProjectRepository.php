@@ -54,18 +54,19 @@ class ProjectRepository extends ServiceEntityRepository
             ';
         $stmt = $conn->prepare($sql);
         $stmt->execute();
-        $freeUid = 100000;
         $results = $stmt->fetchAll();
-        $uids = [];
+        if ( !empty($results) ) {
+            $freeUid = intval(end($results)['uid']) + 1;
+        } else {
+            $freeUid = 100000;
+        }
         foreach ( $results as $index => $row ) {
             $uid = intval($row['uid']);
             if ($index + 100000 !== $uid) {
                 $freeUid = $index + 100000;
                 break;
             }
-            $freeUid = $index + 100001;
         }
-
         return $freeUid;
 
     }

@@ -18,6 +18,24 @@
 
 }
 
+.admin-page {
+
+
+    .table tr td {
+
+        .btn {
+            margin-left: 15px;
+
+            &:first-child {
+                margin-left: 0;
+            }
+
+        }
+
+    }
+
+}
+
 .project-edit-page {
     width: 100%;
     min-width: 320px;

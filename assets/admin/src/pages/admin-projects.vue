@@ -7,7 +7,7 @@
 
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
-        <b-nav-item href="/admin/users" class="active">Users</b-nav-item>
+        <b-nav-item href="/admin/projects" class="active">Projects</b-nav-item>
       </b-navbar-nav>
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
@@ -28,16 +28,16 @@
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
         ></b-form-file>
+        <b-button type="submit" variant="primary">Import</b-button>
       </b-form-group>
-      <b-button type="submit" variant="primary">Import</b-button>
     </b-form>
   </div>
-  <b-table v-if="users.length" sort-by="uid" striped hover :items="users" :fields="fields">
+  <b-table v-if="projects.length" sort-by="uid" striped hover :items="projects" :fields="fields">
       <template v-slot:cell(name)="row">
         {{ row.value }}
       </template>
       <template v-slot:cell(actions)="row">
-        <b-button variant="primary" size="sm" :href="'/admin/users/'+row.item.uid">Edit</b-button>
+        <b-button variant="primary" size="sm" :href="'/admin/projects/'+row.item.uid">Edit</b-button>
       </template>
   </b-table>
 </div>
@@ -54,22 +54,20 @@ export default {
   components: {
   },
 
-  data () {
-    return {
-        user: user,
-        users: users,
-        projectsFile: null,
-        fields: [
-          {key: 'uid', label: 'uid', sortable: true },
-          {key: 'name', label: 'Name', sortable: true },
-          {key: 'https', label: 'Https', sortable: true },
-          {key: 'backend', label: 'Backend', sortable: true },
-          {key: 'backend_version', label: 'Backend version', sortable: true },
-          {key: 'backup', label: 'Backup', sortable: true },
-          {key: 'actions', label: 'Actions'}
-       ]
-    }
-  },
+  data: () => ({
+    user: user,
+    projects: projects,
+    projectsFile: null,
+    fields: [
+      {key: 'uid', label: 'uid', sortable: true },
+      {key: 'name', label: 'Name', sortable: true },
+      {key: 'https', label: 'Https', sortable: true },
+      {key: 'backend', label: 'Backend', sortable: true },
+      {key: 'backend_version', label: 'Backend version', sortable: true },
+      {key: 'backup', label: 'Backup', sortable: true },
+      {key: 'actions', label: 'Actions'}
+    ]
+  }),
 
   computed: {
 

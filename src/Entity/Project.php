@@ -132,7 +132,10 @@ class Project
 
     public function setPassword(string $password): self
     {
-        $this->password = $password;
+        if ( !empty($password) && $this->password !== $password ) {
+            $salt = str_replace('+', '.', base64_encode(random_bytes(6)));
+            $this->password = crypt($password, '$6$'.$salt.'$');
+        }
 
         return $this;
     }
@@ -247,22 +250,21 @@ class Project
 
     public function toObject(): object
     {
-        $object = (object)[
+        return  (object)[
             'uid' => (int)$this->uid,
             'password' => $this->password,
             'domains' => $this->domains,
             'nginx_config' => $this->nginxConfig == 'custom' ? 'custom' : 'default',
             'root_folder' => $this->rootFolder,
-            'https' => $this->https->getName(),
-            'backend' => $this->backend->getName(),
-            'backend_version' => $this->backend->getVersion(),
+            'https' => !empty($this->https) ? $this->https->getName(): 'disabled',
+            'backend' => !empty($this->backend) ? $this->backend->getName(): 'php',
+            'backend_version' => !empty($this->backend) ? $this->backend->getVersion(): 'latest',
             'gunicorn_app_module' => !empty($this->gunicornAppModule) ? $this->gunicornAppModule : '',
             'mysql_db' => (bool)$this->mysql,
             'mysql5_db' => (bool)$this->mysql5,
             'postgresql_db' => (bool)$this->postgre,
             'backup' => (bool)$this->backup
         ];
-        return $object;
     }
 
 }

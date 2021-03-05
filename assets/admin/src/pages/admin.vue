@@ -7,7 +7,7 @@
 
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
-        <b-nav-item href="/admin/users" class="active">Users</b-nav-item>
+        <b-nav-item href="/admin/projects">Projects</b-nav-item>
       </b-navbar-nav>
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
@@ -18,7 +18,12 @@
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
-  <div>{{ user_data.uid }}, {{ user_data.name }}</div>
+  <b-list-group>
+    <b-list-group-item v-for="item in soft" v-bind:key="item.name" class="d-flex justify-content-between align-items-center">
+      {{ item.name }}
+      <b-badge variant="primary" pill>{{ item.version ? item.version : 'n/a' }}</b-badge>
+    </b-list-group-item>
+  </b-list-group>
 </div>
 </template>
 
@@ -33,12 +38,10 @@ export default {
   components: {
   },
 
-  data () {
-    return {
-      user: user,
-      user_data: user_data
-    }
-  },
+  data: () => ({
+    user: user,
+    soft: soft
+  }),
 
   computed: {
 

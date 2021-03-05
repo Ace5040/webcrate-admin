@@ -39,4 +39,31 @@ class HttpsTypeRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * @return HttpsType[] Returns an array of HttpsType objects
+     */
+    public function getList()
+    {
+        return $this->createQueryBuilder('ht')
+            ->orderBy('ht.id', 'ASC')
+            ->setMaxResults(1000)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return [] Returns an array
+     */
+    public function getArray()
+    {
+        return $this->createQueryBuilder('ht')
+            ->orderBy('ht.id', 'ASC')
+            ->setMaxResults(1000)
+            ->getQuery()
+            ->getArrayResult()
+        ;
+    }
+
+
 }

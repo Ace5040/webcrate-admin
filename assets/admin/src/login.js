@@ -6,11 +6,12 @@ Vue.use(IconsPlugin)
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import './styles/common.scss'
 
-import '../css/admin.scss';
+import Login from './pages/login.vue'
 
-import Admin from './admin.vue';
+Vue.config.productionTip = false
 
-var app = new (Vue.extend(Admin))({
+var app = new (Vue.extend(Login))({
     el: '#app'
 });

@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Webcrate Admin Panel{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('chunk-vendors.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin.css') }}">
+{% endblock %}
+{% block javascripts %}
+    <script src="{{ asset('chunk-vendors.js') }}"></script>
+    <script src="{{ asset('admin-project.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <div id="app"></div>
+    <div class="project-edit-page">
+        {{ form_start(form) }}
+            {{ form_widget(form) }}
+            {# {{ form_row(form.name) }}
+            {{ form_row(form.domains) }}
+            {{ form_row(form.https) }}
+            {{ form_row(form.backend) }}
+            {{ form_row(form.backup) }}
+            {{ form_row(form.mysql_db) }}
+            {{ form_row(form.mysql5_db) }}
+            {{ form_row(form.postgresql_db) }}
+            {{ form_row(form.nginx_config) }}
+            {{ form_row(form.root_folder) }}
+            {{ form_row(form.gunicorn_app_module) }} #}
+            <input class="btn btn-primary" type="submit" value="Save"/>
+        {{ form_end(form) }}
+    </div>
+    <script>
+        var user = '{{ app.user ? app.user.email : '' }}';
+    </script>
+{% endblock %}

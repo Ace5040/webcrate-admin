@@ -37,6 +37,11 @@ class Backend
         return $this->name;
     }
 
+    public function getFullName(): ?string
+    {
+        return $this->name . ' - ' . $this->version;
+    }
+
     public function setName(string $name): self
     {
         $this->name = $name;

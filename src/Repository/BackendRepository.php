@@ -30,4 +30,31 @@ class BackendRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    /**
+     * @return Backend[] Returns an array of Backend objects
+     */
+    public function getList()
+    {
+        return $this->createQueryBuilder('b')
+            ->orderBy('b.id', 'ASC')
+            ->setMaxResults(1000)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return [] Returns an array
+     */
+    public function getArray()
+    {
+        return $this->createQueryBuilder('b')
+            ->orderBy('b.id', 'ASC')
+            ->setMaxResults(1000)
+            ->getQuery()
+            ->getArrayResult()
+        ;
+    }
+
 }

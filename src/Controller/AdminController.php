@@ -22,6 +22,17 @@ use App\Entity\HttpsType;
 use App\Entity\Backend;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use App\Form\Type\DomainsType;
+use App\Form\Type\DomainType;
+use App\Form\Type\ProjectType;
+//use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 
 class AdminController extends AbstractController
 {
@@ -38,6 +49,21 @@ class AdminController extends AbstractController
         $this->https_repository = $https_repository;
         $this->backend_repository = $backend_repository;
         $this->manager = $manager;
+    }
+
+    /**
+     * @Route("/admin/project/add", name="project-add")
+     */
+    public function newProject(Request $request)
+    {
+        $form = $this->createFormBuilder()
+            ->add('name', TextType::class, [
+                'constraints' => new NotBlank(),
+            ])
+            ->getForm();
+        return $this->render('admin/project-new.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
@@ -64,67 +90,59 @@ class AdminController extends AbstractController
         }
         $soft_json = $process->getOutput();
         $encoder = new JsonEncoder();
-        $soft = $encoder->decode($soft_json, 'json');
+        $soft = [];
+        if(!empty($soft_json))
+        {
+            $soft = $encoder->decode($soft_json, 'json');
+        }
         return $soft;
     }
 
     /**
-     * @Route("/admin/users", name="admin-users")
+     * @Route("/admin/projects", name="admin-projects")
      */
-    public function users()
+    public function projects()
     {
-        $users = self::get_users_list();
-        return $this->render('admin/users.html.twig', [
+        $projects = [];
+        $list = $this->repository->getList();
+        foreach ($list as $entity) {
+            $project = (object)[];
+            $project->name = $entity->getName();
+            $project->uid = $entity->getUid();
+            $project->backend = $entity->getBackend()->getName();
+            $project->backend_version = $entity->getBackend()->getVersion();
+            $project->backup = $entity->getBackup() ? 'yes' : 'no';
+            $project->https = $entity->getHttps()->getName();
+            $projects[] = $project;
+        }
+        return $this->render('admin/projects.html.twig', [
             'controller_name' => 'AdminController',
-            'users' => $users
+            'projects' => $projects
         ]);
     }
 
     /**
-     * @Route("/admin/users/{uid}", name="admin-user")
+     * @Route("/admin/projects/{uid}", name="admin-project")
      */
-    public function user($uid)
+    public function project($uid, Request $request)
     {
-        $user = self::get_user($uid);
-        return $this->render('admin/user.html.twig', [
-            'controller_name' => 'AdminController',
-            'user' => $user
-        ]);
-    }
 
-    private function get_users_list()
-    {
-        $list = [];
-        if ( file_exists('/webcrate/users.yml') ) {
-            try {
-                $users = $this->repository->getList();
-                foreach ($users as $entity) {
-                    $user = (object)[];
-                    $user->name = $entity->getName();
-                    $user->uid = $entity->getUid();
-                    $user->backend = $entity->getBackend()->getName();
-                    $user->backend_version = $entity->getBackend()->getVersion();
-                    $user->backup = $entity->getBackup() ? 'yes' : 'no';
-                    $user->https = $entity->getHttps()->getName();
-                    $list[] = $user;
-                }
-            } catch (ParseException $exception) {
+        $project = $this->repository->loadByUid($uid);
+        $form = $this->createForm(ProjectType::class, $project);
+        if ($request->isMethod('POST')) {
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $project = $form->getData();
+                $this->manager->persist($project);
+                $this->manager->flush();
+                $this->updateUsersYaml();
+                //return $this->redirectToRoute('admin-projects');
             }
-       }
-       return $list;
-    }
+        }
+        return $this->render('admin/project.html.twig', [
+            'form' => $form->createView(),
+        ]);
 
-    private function get_user($uid)
-    {
-       $entity = $this->repository->loadByUid($uid);
-       $user = (object)[];
-       $user->name = $entity->getName();
-       $user->uid = $entity->getUid();
-       $user->backend = $entity->getBackend()->getName();
-       $user->backend_version = $entity->getBackend()->getVersion();
-       $user->backup = $entity->getBackup() ? 'yes' : 'no';
-       $user->https = $entity->getHttps()->getName();
-       return $user;
     }
 
     /**
@@ -135,30 +153,30 @@ class AdminController extends AbstractController
         $file = $request->files->get('file');
         $filename = $file->getClientOriginalName();
         $filepath = $file->getPathname();
-        $users = Yaml::parseFile($filepath);
-        foreach ( $users as $username => $user ) {
-            $user = (object)$user;
-            $entity = $this->repository->loadByUid($user->uid);
+        $projects = Yaml::parseFile($filepath);
+        foreach ( $projects as $projectname => $project_obj ) {
+            $project_obj = (object)$project_obj;
+            $entity = $this->repository->loadByUid($project_obj->uid);
             if ( empty($entity) ) {
                 $project = new Project();
-                $project->setUid($user->uid);
-                $project->setName($username);
-                $project->setBackup($user->backup == 'yes' || $user->backup === true );
-                $project->setMysql($user->mysql_db == 'yes' || $user->mysql_db === true );
-                $project->setMysql5($user->mysql5_db == 'yes' || $user->mysql5_db === true );
-                $project->setPostgre($user->postgresql_db == 'yes' || $user->postgresql_db === true );
-                $project->setRootFolder($user->root_folder);
-                $project->setPassword($user->password);
-                $project->setNginxConfig($user->nginx_config == 'custom');
-                $https = $this->https_repository->findByName($user->https);
+                $project->setUid($project_obj->uid);
+                $project->setName($projectname);
+                $project->setBackup($project_obj->backup == 'yes' || $project_obj->backup === true );
+                $project->setMysql($project_obj->mysql_db == 'yes' || $project_obj->mysql_db === true );
+                $project->setMysql5($project_obj->mysql5_db == 'yes' || $project_obj->mysql5_db === true );
+                $project->setPostgre($project_obj->postgresql_db == 'yes' || $project_obj->postgresql_db === true );
+                $project->setRootFolder($project_obj->root_folder);
+                $project->setPassword($project_obj->password);
+                $project->setNginxConfig($project_obj->nginx_config == 'custom');
+                $https = $this->https_repository->findByName($project_obj->https);
                 $project->setHttps($https);
-                $backend_version = empty($user->backend_version) || $user->backend_version == "7" ? 'latest' : $user->backend_version;
-                $backend = $this->backend_repository->findByNameAndVersion($user->backend, (string)$backend_version);
+                $backend_version = empty($project_obj->backend_version) || $project_obj->backend_version == "7" ? 'latest' : $project_obj->backend_version;
+                $backend = $this->backend_repository->findByNameAndVersion($project_obj->backend, (string)$backend_version);
                 $project->setBackend($backend);
-                if ( !empty($user->gunicorn_app_module) && ( $user->backend == 'php' ) ) {
-                    $project->getGunicornAppModule($user->gunicorn_app_module);
+                if ( !empty($project_obj->gunicorn_app_module) && ( $project_obj->backend == 'php' ) ) {
+                    $project->getGunicornAppModule($project_obj->gunicorn_app_module);
                 }
-                $project->setDomains($user->domains);
+                $project->setDomains($project_obj->domains);
                 $this->manager->persist($project);
             }
         }
@@ -169,7 +187,7 @@ class AdminController extends AbstractController
         $response = new JsonResponse();
         $response->setData([
             'name' => $filename,
-            'data' => $users,
+            'data' => $project,
             'debug' => $debug
         ]);
 
@@ -179,19 +197,13 @@ class AdminController extends AbstractController
     public function updateUsersYaml()
     {
         $projects = $this->repository->getList();
-        $users = (object)[];
+        $projects_list = (object)[];
         foreach ( $projects as $project ) {
             $projectname = $project->getName();
-            $users->$projectname = $project->toObject();
+            $projects_list->$projectname = $project->toObject();
         }
-        $ymlData = Yaml::dump($users, 3, 2, Yaml::DUMP_OBJECT_AS_MAP);
-        $WEBCRATE_UID = (int)$_ENV['DATABASE_URL'];
-        $WEBCRATE_GID = (int)$_ENV['WEBCRATE_GID'];
 
-        $debug = [
-            'WEBCRATE_UID' => $WEBCRATE_UID,
-            'WEBCRATE_GID' => $WEBCRATE_GID
-        ];
+        $ymlData = Yaml::dump($projects_list, 3, 2, Yaml::DUMP_OBJECT_AS_MAP);
 
         try {
             $new_file_path = "/webcrate/users.yml";
@@ -199,7 +211,8 @@ class AdminController extends AbstractController
         } catch (IOExceptionInterface $exception) {
             $debug['error'] = $exception->getMessage();
         }
-        return $debug;
+
+        return $ymlData;
     }
 
 }

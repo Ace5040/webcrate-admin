@@ -1,0 +1,102 @@
+.action-menu {
+    padding: 20px;
+
+    .custom-file {
+        max-width: 400px;
+        vertical-align: middle;
+    }
+
+    button {
+        vertical-align: middle;
+        margin-left: 20px;
+    }
+
+    .form-group {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+}
+
+.project-edit-page {
+    width: 100%;
+    min-width: 320px;
+    max-width: 622px;
+    margin: 50px auto;
+}
+
+.form-group {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+
+    input[type=text] {
+        width: auto;
+    }
+
+}
+
+fieldset .form-group {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.handle {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 24px;
+    padding: 0 10px;
+    line-height: 1;
+    cursor: move;
+    color: blue;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.1s ease-out;
+
+    &:hover {
+        opacity: 1;
+        transition: opacity 0.1s ease-in;
+    }
+}
+
+.remove {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 24px;
+    padding: 0 10px;
+    line-height: 1;
+    color: red;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.1s ease-out;
+
+    &:hover {
+        opacity: 1;
+        transition: opacity 0.1s ease-in;
+    }
+
+}
+
+#project_domains {
+
+    .form-group {
+        display: inline-block;
+
+        .form-control {
+            width: auto;
+        }
+
+        input {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+    }
+}
+
+.btn .icon {
+    display: inline-block;
+}

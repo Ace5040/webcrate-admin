@@ -18,11 +18,19 @@ class Backends extends Fixture
             ],
             [
                 'name' => 'php',
-                'version' => '56'
+                'version' => '80'
+            ],
+            [
+                'name' => 'php',
+                'version' => '74'
             ],
             [
                 'name' => 'php',
                 'version' => '73'
+            ],
+            [
+                'name' => 'php',
+                'version' => '56'
             ],
             [
                 'name' => 'gunicorn',

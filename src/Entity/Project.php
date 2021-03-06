@@ -132,9 +132,18 @@ class Project
 
     public function setPassword(string $password): self
     {
-        if ( !empty($password) && $this->password !== $password ) {
+        if ( !empty($password) ) {
             $salt = str_replace('+', '.', base64_encode(random_bytes(6)));
             $this->password = crypt($password, '$6$'.$salt.'$');
+        }
+
+        return $this;
+    }
+
+    public function setPasswordHash(string $password): self
+    {
+        if ( !empty($password) ) {
+            $this->password = $password;
         }
 
         return $this;

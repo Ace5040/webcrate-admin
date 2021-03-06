@@ -194,15 +194,15 @@ class AdminController extends AbstractController
                 $project->setMysql5($project_obj->mysql5_db == 'yes' || $project_obj->mysql5_db === true );
                 $project->setPostgre($project_obj->postgresql_db == 'yes' || $project_obj->postgresql_db === true );
                 $project->setRootFolder($project_obj->root_folder);
-                $project->setPassword($project_obj->password);
+                $project->setPasswordHash($project_obj->password);
                 $project->setNginxConfig($project_obj->nginx_config == 'custom');
                 $https = $this->https_repository->findByName($project_obj->https);
                 $project->setHttps($https);
                 $backend_version = empty($project_obj->backend_version) || $project_obj->backend_version == "7" ? 'latest' : $project_obj->backend_version;
                 $backend = $this->backend_repository->findByNameAndVersion($project_obj->backend, (string)$backend_version);
                 $project->setBackend($backend);
-                if ( !empty($project_obj->gunicorn_app_module) && ( $project_obj->backend == 'php' ) ) {
-                    $project->getGunicornAppModule($project_obj->gunicorn_app_module);
+                if ( !empty($project_obj->gunicorn_app_module) && ( $project_obj->backend == 'gunicorn' ) ) {
+                    $project->setGunicornAppModule($project_obj->gunicorn_app_module);
                 }
                 $project->setDomains($project_obj->domains);
                 $this->manager->persist($project);

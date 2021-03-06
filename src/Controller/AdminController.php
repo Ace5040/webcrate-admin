@@ -68,7 +68,7 @@ class AdminController extends AbstractController
 
     private function getVersions()
     {
-        $process = Process::fromShellCommandline('/webcrate/versions.py');
+        $process = Process::fromShellCommandline('sudo /webcrate/versions.py');
         $process->run();
         if (!$process->isSuccessful()) {
             throw new \Symfony\Component\Process\Exception\ProcessFailedException($process);
@@ -236,7 +236,7 @@ class AdminController extends AbstractController
         try {
             $new_file_path = "/webcrate/updated-users.yml";
             file_put_contents($new_file_path, $ymlData);
-            $process = Process::fromShellCommandline('/webcrate/updateusers.py');
+            $process = Process::fromShellCommandline('sudo /webcrate/updateusers.py');
             $process->run();
             if (!$process->isSuccessful()) {
                 throw new \Symfony\Component\Process\Exception\ProcessFailedException($process);

@@ -32,6 +32,32 @@ class ProjectRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * @return object[] Returns an array of Project-like objects
+     */
+    public function getListForTable()
+    {
+        $projects = $this->createQueryBuilder('p')
+            ->orderBy('p.uid', 'ASC')
+            ->setMaxResults(1000)
+            ->getQuery()
+            ->getResult()
+        ;
+        $list = [];
+        foreach ($projects as $project) {
+            $item = (object)[];
+            $item->name = $project->getName();
+            $item->uid = $project->getUid();
+            $item->backend = $project->getBackend()->getName();
+            $item->backend_version = $project->getBackend()->getVersion();
+            $item->backup = $project->getBackup() ? 'yes' : 'no';
+            $item->https = $project->getHttps()->getName();
+            $list[] = $item;
+        }
+        return $list;
+
+    }
+
     public function loadByUid($uid): ?Project
     {
         return $this->createQueryBuilder('p')

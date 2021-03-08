@@ -88,21 +88,10 @@ class AdminController extends AbstractController
      */
     public function projects()
     {
-        $projects = [];
-        $list = $this->repository->getList();
-        foreach ($list as $entity) {
-            $project = (object)[];
-            $project->name = $entity->getName();
-            $project->uid = $entity->getUid();
-            $project->backend = $entity->getBackend()->getName();
-            $project->backend_version = $entity->getBackend()->getVersion();
-            $project->backup = $entity->getBackup() ? 'yes' : 'no';
-            $project->https = $entity->getHttps()->getName();
-            $projects[] = $project;
-        }
+        $list = $this->repository->getListForTable();
         return $this->render('admin/projects.html.twig', [
             'controller_name' => 'AdminController',
-            'projects' => $projects
+            'projects' => $list
         ]);
     }
 
@@ -170,7 +159,13 @@ class AdminController extends AbstractController
         $this->manager->remove($project);
         $this->manager->flush();
         $this->updateUsersYaml();
-        return $this->redirectToRoute('admin-projects');
+        $list = $this->repository->getListForTable();
+        $response = new JsonResponse();
+        $response->setData([
+            'result' => 'ok',
+            'projects' => $list
+        ]);
+        return $response;
     }
 
     /**
@@ -209,14 +204,12 @@ class AdminController extends AbstractController
             }
         }
         $this->manager->flush();
-
-        $debug = $this->updateUsersYaml();
-
+        $this->updateUsersYaml();
+        $list = $this->repository->getListForTable();
         $response = new JsonResponse();
         $response->setData([
-            'name' => $filename,
-            'data' => $project,
-            'debug' => $debug
+            'result' => 'ok',
+            'projects' => $list
         ]);
 
         return $response;

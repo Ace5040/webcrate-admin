@@ -33,15 +33,48 @@
     </b-form>
     <b-button href="/admin/project/add" variant="primary">Create new project</b-button>
   </div>
-  <b-table v-if="projects.length" sort-by="uid" striped hover :items="projects" :fields="fields">
-      <template v-slot:cell(name)="row">
-        {{ row.value }}
+  <div class="projects-table position-relative">
+    <b-table v-if="projects.length" sort-by="uid" striped hover :items="projects" :fields="fields">
+        <template v-slot:cell(name)="row">
+          {{ row.value }}
+        </template>
+        <template v-slot:cell(actions)="row">
+          <b-button variant="primary" size="sm" :href="'/admin/project/'+row.item.uid">Edit</b-button>
+          <b-button variant="danger" size="sm" @click="onDelete(row.item.uid)">Delete</b-button>
+        </template>
+    </b-table>
+    <b-overlay :show="busy" no-wrap @shown="onShown" @hidden="onHidden">
+      <template #overlay>
+        <div v-if="processing" class="text-center p-4 bg-primary text-light rounded">
+          <b-icon icon="cloud-upload" font-scale="4"></b-icon>
+          <div class="mb-3">Processing...</div>
+          <b-progress
+            min="1"
+            max="20"
+            :value="counter"
+            variant="success"
+            height="3px"
+            class="mx-n4 rounded-0"
+          ></b-progress>
+        </div>
+        <div
+          v-else
+          ref="dialog"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="form-confirm-label"
+          class="text-center p-3"
+        >
+          <p><strong id="form-confirm-label">Are you sure?</strong></p>
+          <div class="d-flex">
+            <b-button variant="outline-danger" class="mr-3" @click="onCancel">Cancel</b-button>
+            <b-button variant="outline-success" @click="onOK">OK</b-button>
+          </div>
+        </div>
       </template>
-      <template v-slot:cell(actions)="row">
-        <b-button variant="primary" size="sm" :href="'/admin/project/'+row.item.uid">Edit</b-button>
-        <b-button variant="danger" size="sm" :href="'/admin/project/'+row.item.uid+'/delete'">Delete</b-button>
-      </template>
-  </b-table>
+    </b-overlay>
+  </div>
 </div>
 </template>
 
@@ -57,6 +90,11 @@ export default {
   },
 
   data: () => ({
+    busy: false,
+    processing: false,
+    counter: 1,
+    interval: null,
+    selectedPid: null,
     user: user,
     projects: projects,
     projectsFile: null,
@@ -85,7 +123,7 @@ export default {
 
   methods: {
 
-    onImport: function(e) {
+    onImport(e) {
       e.preventDefault();
       let formData = new FormData();
       formData.append('file', this.projectsFile);
@@ -97,10 +135,67 @@ export default {
               'Content-Type': 'multipart/form-data'
           }
         }
-      ).then(function(data){
-        console.log(data.data);
+      ).then((response) => {
+        let data = response.data
+        if (data && data.result === 'ok' && data.projects) {
+          this.projects = data.projects
+        }
       })
-      .catch(function(){
+      .catch(() => {
+        console.log('FAILURE!!');
+      });
+
+    },
+
+    clearInterval() {
+      if (this.interval) {
+        clearInterval(this.interval)
+        this.interval = null
+      }
+    },
+    onShown() {
+      this.$refs.dialog.focus()
+    },
+    onHidden() {
+      //this.$refs.submit.focus()
+    },
+    onDelete(pid) {
+      this.selectedPid = pid
+      this.processing = false
+      this.busy = true
+    },
+    onCancel() {
+      this.busy = false
+      this.selectedPid = null
+    },
+    onOK() {
+      this.counter = 1
+      this.processing = true
+      this.clearInterval()
+      this.interval = setInterval(() => {
+        if (this.counter < 20) {
+          this.counter = this.counter + 1
+        } else {
+          this.clearInterval()
+          this.$nextTick(() => {
+            this.busy = this.processing = false
+            this.selectedPid = null
+          })
+        }
+      }, 150)
+      this.axios.get('/admin/project/' + this.selectedPid + '/delete')
+      .then((response) => {
+          let data = response.data
+          if (data && data.result === 'ok' && data.projects) {
+            this.projects = data.projects
+          }
+          this.clearInterval()
+          this.$nextTick(() => {
+            this.busy = this.processing = false
+            this.selectedPid = null
+          })
+      })
+      .catch(() => {
         console.log('FAILURE!!');
       });
 

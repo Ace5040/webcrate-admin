@@ -1,20 +1,38 @@
+import 'es6-promise/auto'
 import Vue from 'vue'
+import Vuex from 'vuex'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import Sortable from 'sortablejs'
 import $ from 'jquery'
-
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
-
+Vue.use(Vuex)
+Vue.use(VueAxios, axios)
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './styles/common.scss'
 import './styles/admin.scss'
 
-import Admin from './pages/admin-project.vue';
+const store = new Vuex.Store({
+    state: {
+        user: user
+    }
+})
+
+import header from './components/header.vue';
+    new (Vue.extend(header))({
+    el: '#header',
+    store
+});
+
+import page from './pages/admin-project.vue';
+new (Vue.extend(page))({
+    el: '#app'
+});
 
 var el = document.getElementById('project_domains');
-
 var sortable = Sortable.create(el,{
     handle: '.handle',
     draggable: '.form-group',
@@ -45,8 +63,4 @@ $('body').on('click', '.remove', e => {
             $('input', item).attr('name', 'project[domains][' + index +']');
         });
     }
-});
-
-var app = new (Vue.extend(Admin))({
-    el: '#app'
 });

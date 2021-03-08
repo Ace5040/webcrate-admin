@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Webcrate Admin Panel{% endblock %}
+{% block title %}Webcrate - software versions{% endblock %}
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('chunk-vendors.css') }}">
@@ -16,5 +16,6 @@
         var user = '{{ app.user ? app.user.email : '' }}';
         var soft = {{ soft|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
     </script>
+    <div id="header"></div>
     <div id="app"></div>
 {% endblock %}

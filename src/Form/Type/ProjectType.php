@@ -69,6 +69,12 @@ class ProjectType extends AbstractType
             //'multiple' => false,
             'expanded' => true
         ])
+        ->add('redirect', CheckboxType::class, [
+            'required' => false,
+        ])
+        ->add('gzip', CheckboxType::class, [
+            'required' => false,
+        ])
         ->add('backup', CheckboxType::class, [
             'required' => false,
         ])

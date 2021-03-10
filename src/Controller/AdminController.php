@@ -185,6 +185,7 @@ class AdminController extends AbstractController
                 $project->setUid($project_obj->uid);
                 $project->setName($projectname);
                 $project->setBackup($project_obj->backup == 'yes' || $project_obj->backup === true );
+                $project->setRedirect($project_obj->redirect == 'yes' || $project_obj->redirect === true );
                 $project->setMysql($project_obj->mysql_db == 'yes' || $project_obj->mysql_db === true );
                 $project->setMysql5($project_obj->mysql5_db == 'yes' || $project_obj->mysql5_db === true );
                 $project->setPostgre($project_obj->postgresql_db == 'yes' || $project_obj->postgresql_db === true );

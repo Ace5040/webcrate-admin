@@ -50,6 +50,11 @@ class Project
     /**
      * @ORM\Column(type="boolean")
      */
+    private $redirect;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
     private $mysql;
 
     /**
@@ -83,6 +88,11 @@ class Project
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $gunicornAppModule;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $gzip;
 
     public function getId(): ?int
     {
@@ -169,6 +179,18 @@ class Project
     public function setRootFolder(string $rootFolder): self
     {
         $this->rootFolder = $rootFolder;
+
+        return $this;
+    }
+
+    public function getRedirect(): ?bool
+    {
+        return $this->redirect;
+    }
+
+    public function setRedirect(bool $redirect): self
+    {
+        $this->redirect = $redirect;
 
         return $this;
     }
@@ -269,11 +291,25 @@ class Project
             'backend' => !empty($this->backend) ? $this->backend->getName(): 'php',
             'backend_version' => !empty($this->backend) ? $this->backend->getVersion(): 'latest',
             'gunicorn_app_module' => !empty($this->gunicornAppModule) ? $this->gunicornAppModule : '',
+            'redirect' => (bool)$this->redirect,
+            'gzip' => (bool)$this->gzip,
             'mysql_db' => (bool)$this->mysql,
             'mysql5_db' => (bool)$this->mysql5,
             'postgresql_db' => (bool)$this->postgre,
             'backup' => (bool)$this->backup
         ];
+    }
+
+    public function getGzip(): ?bool
+    {
+        return $this->gzip;
+    }
+
+    public function setGzip(bool $gzip): self
+    {
+        $this->gzip = $gzip;
+
+        return $this;
     }
 
 }

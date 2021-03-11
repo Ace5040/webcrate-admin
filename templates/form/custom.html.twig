@@ -22,3 +22,42 @@
         <span class="remove"><i class="icon icon-cancel"></i></span>
     </{{ element|default('div') }}>
 {%- endblock domain_row %}
+
+{% block nginx_options_row -%}
+    {%- if compound is defined and compound -%}
+        {%- set element = 'fieldset' -%}
+    {%- endif -%}
+    {%- set widget_attr = {} -%}
+    {%- if help is not empty -%}
+        {%- set widget_attr = {attr: {'aria-describedby': id ~"_help"}} -%}
+    {%- endif -%}
+    <{{ element|default('div') }}{% with {attr: row_attr|merge({class: (row_attr.class|default('') ~ ' form-group')|trim})} %}{{ block('attributes') }}{% endwith %}>
+        {{- form_label(form) -}}
+        {{- form_widget(form, widget_attr) -}}
+        <div class="add-nginx-option-button btn btn-primary btn-sm"><i class="icon icon-plus"></i> Add Nginx Option</div>
+        {{- form_help(form) -}}
+    </{{ element|default('div') }}>
+{%- endblock nginx_options_row %}
+
+{% block nginx_option_row -%}
+    {%- set widget_attr = {} -%}
+    <{{ element|default('div') }}{% with {attr: row_attr|merge({class: (row_attr.class|default('') ~ ' form-group')|trim})} %}{{ block('attributes') }}{% endwith %}>
+        <span class="handle"><i class="icon icon-move"></i></span>
+        {{- form_widget(form, widget_attr) -}}
+        <span class="remove"><i class="icon icon-cancel"></i></span>
+    </{{ element|default('div') }}>
+{%- endblock nginx_option_row %}
+
+{% block nginx_option_name_row -%}
+    {%- set widget_attr = {} -%}
+    <{{ element|default('div') }}{% with {attr: row_attr|merge({class: (row_attr.class|default('') ~ ' form-group nginx-option-name')|trim})} %}{{ block('attributes') }}{% endwith %}>
+        {{- form_widget(form, widget_attr) -}}
+    </{{ element|default('div') }}>
+{%- endblock nginx_option_name_row %}
+
+{% block nginx_option_value_row -%}
+    {%- set widget_attr = {} -%}
+    <{{ element|default('div') }}{% with {attr: row_attr|merge({class: (row_attr.class|default('') ~ ' form-group nginx-option-value')|trim})} %}{{ block('attributes') }}{% endwith %}>
+        {{- form_widget(form, widget_attr) -}}
+    </{{ element|default('div') }}>
+{%- endblock nginx_option_value_row %}

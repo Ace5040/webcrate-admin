@@ -186,6 +186,7 @@ class AdminController extends AbstractController
                 $project->setName($projectname);
                 $project->setBackup($project_obj->backup == 'yes' || $project_obj->backup === true );
                 $project->setRedirect($project_obj->redirect == 'yes' || $project_obj->redirect === true );
+                $project->setGzip($project_obj->gzip == 'yes' || $project_obj->gzip === true );
                 $project->setMysql($project_obj->mysql_db == 'yes' || $project_obj->mysql_db === true );
                 $project->setMysql5($project_obj->mysql5_db == 'yes' || $project_obj->mysql5_db === true );
                 $project->setPostgre($project_obj->postgresql_db == 'yes' || $project_obj->postgresql_db === true );
@@ -201,6 +202,11 @@ class AdminController extends AbstractController
                     $project->setGunicornAppModule($project_obj->gunicorn_app_module);
                 }
                 $project->setDomains($project_obj->domains);
+                $options_array = [];
+                foreach ( $project_obj->nginx_options as $name => $value ) {
+                    $options_array[] = [ 'name' => $name, 'value' => $value ];
+                }
+                $project->setNginxOptions($options_array);
                 $this->manager->persist($project);
             }
         }

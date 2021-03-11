@@ -118,3 +118,39 @@ fieldset .form-group {
 .btn .icon {
     display: inline-block;
 }
+
+#project_nginx_options {
+
+    div.form-group {
+        display: inline-block;
+
+        .form-control {
+            width: auto;
+        }
+
+        .nginx-option-name {
+            input {
+                margin-right: 15px;
+            }
+        }
+
+        input {
+            display: inline-block;
+            vertical-align: middle;
+            box-sizing: border-box;
+        }
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        > div {
+            display: inline-block;
+            .form-group {
+                margin-bottom: 0;
+            }
+        }
+
+    }
+
+}

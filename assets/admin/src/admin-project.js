@@ -41,8 +41,7 @@ var sortable = Sortable.create(el,{
         $('#project_domains .form-group').each( (index, item) => {
             $('input', item).attr('name', 'project[domains][' + index +']');
         });
-    },
-
+    }
 });
 
 $('body').on('click', '.add-domain-button', e => {
@@ -61,6 +60,38 @@ $('body').on('click', '.remove', e => {
         $(item).parent().remove();
         $('#project_domains .form-group').each( (index, item) => {
             $('input', item).attr('name', 'project[domains][' + index +']');
+        });
+    }
+});
+
+var el = document.getElementById('project_nginx_options');
+var sortable = Sortable.create(el,{
+    handle: '.handle',
+    draggable: '.form-group',
+    direction: 'vertical',
+	onEnd: function () {
+        $('#project_nginx_options .form-group').each( (index, item) => {
+            $('input', item).attr('name', 'project[nginx_options][' + index +']');
+        });
+    }
+});
+
+$('body').on('click', '.add-nginx-option-button', e => {
+    var list = $('#project_nginx_options');
+    var counter = list.children().length;
+    var newWidget = list.attr('data-prototype');
+    newWidget = newWidget.replace(/__name__/g, counter);
+    $(newWidget).appendTo(list);
+});
+
+$('body').on('click', '.remove', e => {
+    var list = $('#project_nginx_options');
+    var counter = list.children().length;
+    if ( counter > 1 ) {
+        let item = e.currentTarget;
+        $(item).parent().remove();
+        $('#project_nginx_options .form-group').each( (index, item) => {
+            $('input', item).attr('name', 'project[nginx_options][' + index +']');
         });
     }
 });

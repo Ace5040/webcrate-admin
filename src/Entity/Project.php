@@ -94,6 +94,11 @@ class Project
      */
     private $gzip;
 
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $nginx_options = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -293,6 +298,7 @@ class Project
             'gunicorn_app_module' => !empty($this->gunicornAppModule) ? $this->gunicornAppModule : '',
             'redirect' => (bool)$this->redirect,
             'gzip' => (bool)$this->gzip,
+            'nginx_options' => $this->getKeyedNginxOptions(),
             'mysql_db' => (bool)$this->mysql,
             'mysql5_db' => (bool)$this->mysql5,
             'postgresql_db' => (bool)$this->postgre,
@@ -309,6 +315,28 @@ class Project
     {
         $this->gzip = $gzip;
 
+        return $this;
+    }
+
+    public function getNginxOptions(): ?array
+    {
+        return $this->nginx_options;
+    }
+
+    public function getKeyedNginxOptions(): ?array
+    {
+        $assocArray = [];
+        foreach ( $this->nginx_options as $option ) {
+            $assocArray[ $option['name'] ] = $option['value'];
+        }
+        return $assocArray;
+    }
+
+    public function setNginxOptions(array $nginx_options): self
+    {
+        $this->nginx_options = $nginx_options;
+        dump($nginx_options);
+        //die();
         return $this;
     }
 

@@ -22,6 +22,8 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use App\Form\Type\DomainsType;
 use App\Form\Type\DomainType;
+use App\Form\Type\NginxOptionsType;
+use App\Form\Type\NginxOptionType;
 
 class ProjectType extends AbstractType
 {
@@ -46,7 +48,7 @@ class ProjectType extends AbstractType
             'allow_delete' => true,
             'delete_empty' => true,
             'constraints' => new NotBlank(),
-            'prototype' => true
+            'prototype' => true,
         ])
         ->add('https', EntityType::class, [
             'class' => HttpsType::class,
@@ -74,6 +76,14 @@ class ProjectType extends AbstractType
         ])
         ->add('gzip', CheckboxType::class, [
             'required' => false,
+        ])
+        ->add('nginx_options', NginxOptionsType::class, [
+            'entry_type' => NginxOptionType::class,
+            'allow_add' => true,
+            'allow_delete' => true,
+            'delete_empty' => true,
+            'by_reference' => false,
+            'prototype' => true,
         ])
         ->add('backup', CheckboxType::class, [
             'required' => false,
